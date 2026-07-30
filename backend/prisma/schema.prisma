@@ -14,10 +14,11 @@ datasource db {
 }
 
 model User {
-  id         String         @id @default(uuid())
-  name       String
-  createdAt  DateTime       @default(now())
-  identities UserIdentity[]
+  id          String         @id @default(uuid())
+  displayName String?
+  email       String         @unique
+  createdAt   DateTime       @default(now())
+  identities  UserIdentity[]
 }
 
 model UserIdentity {
@@ -28,5 +29,3 @@ model UserIdentity {
 
   @@unique([providerName, providerSub])
 }
-
-
