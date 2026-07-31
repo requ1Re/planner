@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { BasicUser } from '../auth/jwt.strategy';
 import { Project } from '../generated/prisma/client';
 import type {
     ProjectUncheckedCreateInput,
@@ -16,19 +18,30 @@ export class ProjectsService {
     });
   }
 
-  findAll(): Promise<Project[]> {
+  findAll(req: Request): Promise<Project[]> {
+    const basicUser = req.user as BasicUser;
+
     return this.prisma.project.findMany({
+      where: {
+        ownerId: basicUser.userId
+      },
       orderBy: {
         createdAt: 'desc'
       }
     });
   }
 
-  findOne(id: string): Promise<Project | null> {
+  findOne(req: Request, id: string): Promise<Project | null> {
+    const basicUser = req.user as BasicUser;
+
     return this.prisma.project.findUnique({
       where: {
         id,
+        ownerId: basicUser.userId
       },
+      include: {
+        tasks: true
+      }
     });
   }
 

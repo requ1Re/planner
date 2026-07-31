@@ -7,7 +7,9 @@ import {
     Param,
     Patch,
     Post,
+    Req,
 } from '@nestjs/common';
+import { type Request } from 'express';
 import {
     type ProjectUncheckedCreateInput,
     type ProjectUncheckedUpdateInput,
@@ -25,15 +27,16 @@ export class ProjectsController {
   }
 
   @Get()
-  findAll() {
-    return this.projectsService.findAll();
+  findAll(@Req() request: Request) {
+    return this.projectsService.findAll(request);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const project = await this.projectsService.findOne(id);
-    if (!project)
+  async findOne(@Req() request: Request, @Param('id') id: string) {
+    const project = await this.projectsService.findOne(request, id);
+    if (!project) {
       throw new NotFoundException(ErrorCodes.ERROR_PROJECT_NOT_FOUND);
+    }
 
     return project;
   }
