@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Profile } from 'passport-openidconnect';
 import { User } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { BasicUser } from './jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateAndLinkOidcUser(issuer: string, sub: string, profile: Profile) {
+  async validateAndLinkOidcUser(issuer: string, sub: string, profile: Profile): Promise<User> {
     const existingIdentity = await this.prisma.userIdentity.findUnique({
       where: {
         providerName_providerSub: {
@@ -59,13 +60,21 @@ export class AuthService {
   }
 
   login(user: User) {
-    const payload = {
-      email: user.email,
-      sub: user.id,
+    const payload: BasicUser = {
+      userId: user.id,
+      email: user.email
     };
 
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  getUser(id: string): Promise<User|null> {
+    return this.prisma.user.findUnique({
+        where: {
+            id
+        }
+    })
   }
 }

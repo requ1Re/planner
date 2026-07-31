@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { Public } from '../decorators/public';
 import { User } from '../generated/prisma/client';
 import { AuthService } from './auth.service';
+import { BasicUser } from './jwt.strategy';
 import { OidcAuthGuard } from './oidc-auth.guard';
 
 @Controller('auth')
@@ -20,11 +21,18 @@ export class AuthController {
   @Get('callback')
   @UseGuards(OidcAuthGuard)
   callback(@Req() req: Request, @Res() res: Response) {
-    
     const { access_token } = this.authService.login(req.user as User);
 
     return res.json({
       access_token
     });
+  }
+
+  @Get('profile')
+  profile(@Req() req: Request){
+    const basicUser = req.user as BasicUser;
+    const user = this.authService.getUser(basicUser.userId);
+
+    return user;
   }
 }
