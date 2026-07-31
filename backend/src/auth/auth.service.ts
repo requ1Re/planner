@@ -14,7 +14,11 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateAndLinkOidcUser(issuer: string, sub: string, profile: Profile): Promise<User> {
+  async validateAndLinkOidcUser(
+    issuer: string,
+    sub: string,
+    profile: Profile,
+  ): Promise<User> {
     const existingIdentity = await this.prisma.userIdentity.findUnique({
       where: {
         providerName_providerSub: {
@@ -25,13 +29,23 @@ export class AuthService {
       include: { user: true },
     });
 
-    if (existingIdentity) {
-      return existingIdentity.user;
-    }
-
     const email = profile.emails?.[0]?.value;
     if (!email) {
       throw new BadRequestException('Missing email on oidc profile');
+    }
+
+    if (existingIdentity) {
+      // update data
+      const user = await this.prisma.user.update({
+        where: {
+          id: existingIdentity.userId,
+        },
+        data: {
+          email,
+          displayName: profile.displayName,
+        },
+      });
+      return user;
     }
 
     try {
@@ -62,7 +76,7 @@ export class AuthService {
   login(user: User) {
     const payload: BasicUser = {
       userId: user.id,
-      email: user.email
+      email: user.email,
     };
 
     return {
@@ -70,11 +84,11 @@ export class AuthService {
     };
   }
 
-  getUser(id: string): Promise<User|null> {
+  getUser(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-        where: {
-            id
-        }
-    })
+      where: {
+        id,
+      },
+    });
   }
 }
