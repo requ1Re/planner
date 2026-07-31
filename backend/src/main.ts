@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import session from 'express-session';
 import { AppModule } from './app.module';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { TransformInterceptor } from './interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +30,8 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(new ErrorInterceptor());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
