@@ -14,9 +14,22 @@ export class TasksService {
 
     return this.prisma.task.create({
       data: {
-        ...createTaskDto,
+        name: createTaskDto.name,
+        description: createTaskDto.description,
         projectId,
         createdById: basicUser.userId,
+        tags: {
+          connect: (createTaskDto.tagIds ?? []).map((id) => ({
+            id,
+          })),
+        },
+      },
+      include: {
+        tags: {
+          omit: {
+            userId: true,
+          },
+        },
       },
     });
   }
@@ -26,6 +39,14 @@ export class TasksService {
       where: {
         projectId,
       },
+
+      include: {
+        tags: {
+          omit: {
+            userId: true,
+          },
+        },
+      },
     });
   }
 
@@ -34,14 +55,39 @@ export class TasksService {
       where: {
         id,
       },
+
+      include: {
+        tags: {
+          omit: {
+            userId: true,
+          },
+        },
+      },
     });
   }
 
   update(id: string, updateTaskDto: UpdateTaskDto) {
+    console.log('update ' + id + JSON.stringify(updateTaskDto));
     return this.prisma.task.update({
-      data: updateTaskDto,
+      data: {
+        name: updateTaskDto.name,
+        description: updateTaskDto.description,
+        tags: {
+          set: (updateTaskDto.tagIds ?? []).map((id) => ({
+            id,
+          })),
+        },
+      },
+
       where: {
         id,
+      },
+      include: {
+        tags: {
+          omit: {
+            userId: true,
+          },
+        },
       },
     });
   }
