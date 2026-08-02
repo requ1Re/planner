@@ -2,19 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { BasicUser } from '../auth/jwt.strategy';
 import { Project } from '../generated/prisma/client';
-import type {
-    ProjectUncheckedCreateInput,
-    ProjectUncheckedUpdateInput,
-} from '../generated/prisma/models';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateProjectDto, UpdateProjectDto } from './create-update-project-dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createProjectDto: ProjectUncheckedCreateInput): Promise<Project> {
+  create(req: Request, createProjectDto: CreateProjectDto): Promise<Project> {
+    const basicUser = req.user as BasicUser;
+
     return this.prisma.project.create({
-      data: createProjectDto,
+      data: {
+        name: createProjectDto.name,
+        ownerId: basicUser.userId
+      },
     });
   }
 
@@ -47,7 +49,7 @@ export class ProjectsService {
 
   update(
     id: string,
-    updateProjectDto: ProjectUncheckedUpdateInput,
+    updateProjectDto: UpdateProjectDto,
   ): Promise<Project> {
     return this.prisma.project.update({
       data: updateProjectDto,

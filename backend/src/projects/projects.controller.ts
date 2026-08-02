@@ -10,11 +10,8 @@ import {
     Req,
 } from '@nestjs/common';
 import { type Request } from 'express';
-import {
-    type ProjectUncheckedCreateInput,
-    type ProjectUncheckedUpdateInput,
-} from '../generated/prisma/models';
 import { ErrorCodes } from '../interceptors/error.interceptor';
+import { type CreateProjectDto, type UpdateProjectDto } from './create-update-project-dto';
 import { ProjectsService } from './projects.service';
 
 @Controller('projects')
@@ -22,8 +19,8 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  create(@Body() createProjectDto: ProjectUncheckedCreateInput) {
-    return this.projectsService.create(createProjectDto);
+  create(@Req() request: Request, @Body() createProjectDto: CreateProjectDto) {
+    return this.projectsService.create(request, createProjectDto);
   }
 
   @Get()
@@ -44,7 +41,7 @@ export class ProjectsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateProjectDto: ProjectUncheckedUpdateInput,
+    @Body() updateProjectDto: UpdateProjectDto,
   ) {
     return this.projectsService.update(id, updateProjectDto);
   }
