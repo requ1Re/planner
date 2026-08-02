@@ -14,7 +14,7 @@ export class TasksService {
 
     return this.prisma.task.create({
       data: {
-        name: createTaskDto.name,
+        ...createTaskDto,
         projectId,
         createdById: basicUser.userId,
       },
@@ -38,7 +38,7 @@ export class TasksService {
   }
 
   update(id: string, updateTaskDto: UpdateTaskDto) {
-    return this.prisma.project.update({
+    return this.prisma.task.update({
       data: updateTaskDto,
       where: {
         id,
